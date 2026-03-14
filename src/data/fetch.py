@@ -194,22 +194,51 @@ def fetch_13f_holdings(cik, fund_name, cache_dir="data/raw"):
         all_holdings = []
         for _, filing in gme_window.iterrows():
             acc_no = filing['accession'].replace('-', '')
-            info_url = f"https://data.sec.gov/Archives/edgar/data/{cik.lstrip('0')}/{acc_no}/"
+            acc_dash = filing['accession']
+            cik_stripped = cik.lstrip('0')
+            base_url = f"https://www.sec.gov/Archives/edgar/data/{cik_stripped}/{acc_no}/"
 
             try:
-                idx_resp = requests.get(info_url + "index.json", headers=SEC_HEADERS, timeout=15)
-                idx_resp.raise_for_status()
-                idx_data = idx_resp.json()
-
+                # Try index.json first, fall back to HTML scraping
                 info_file = None
-                for item in idx_data.get("directory", {}).get("item", []):
-                    name = item.get("name", "").lower()
-                    if "infotable" in name or "information" in name:
-                        info_file = item["name"]
-                        break
+                try:
+                    idx_resp = requests.get(
+                        f"https://data.sec.gov/Archives/edgar/data/{cik_stripped}/{acc_no}/index.json",
+                        headers=SEC_HEADERS, timeout=15)
+                    idx_resp.raise_for_status()
+                    idx_data = idx_resp.json()
+                    for item in idx_data.get("directory", {}).get("item", []):
+                        name = item.get("name", "").lower()
+                        if "infotable" in name or "information" in name:
+                            info_file = item["name"]
+                            break
+                        # Broader: any XML that's not primary_doc.xml
+                        if name.endswith('.xml') and name != 'primary_doc.xml' and info_file is None:
+                            info_file = item["name"]
+                except Exception:
+                    pass
+
+                # Fallback: scrape HTML index for INFORMATION TABLE typed files
+                if not info_file:
+                    import re
+                    idx_url = f"{base_url}{acc_dash}-index.htm"
+                    idx_resp = requests.get(idx_url, headers=SEC_HEADERS, timeout=15)
+                    if idx_resp.status_code == 200:
+                        matches = re.findall(
+                            r'href="[^"]*?/([^/"]+\.xml)"[^<]*</a>\s*</td>\s*<td[^>]*>\s*INFORMATION TABLE',
+                            idx_resp.text, re.IGNORECASE)
+                        if matches:
+                            info_file = matches[0]
+                        else:
+                            # Any non-primary XML
+                            xml_files = re.findall(r'href="[^"]*?/([^/"]+\.xml)"', idx_resp.text)
+                            xml_files = [f for f in xml_files if f != 'primary_doc.xml']
+                            if xml_files:
+                                info_file = xml_files[0]
+                    info_url = base_url
 
                 if info_file:
-                    xml_url = info_url + info_file
+                    xml_url = base_url + info_file
                     xml_resp = requests.get(xml_url, headers=SEC_HEADERS, timeout=15)
                     xml_resp.raise_for_status()
 
