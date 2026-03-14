@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:www.federalreserve.gov)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(python3*)",
+      "Bash(cd*)",
+      "Bash(ls*)",
+      "Bash(mkdir*)",
+      "Bash(pip*)"
     ]
   }
 }
