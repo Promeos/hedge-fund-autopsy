@@ -2,7 +2,7 @@
 
 An open-source intelligence project reconstructing the U.S. hedge fund industry's financial anatomy from public regulatory data — balance sheets, derivatives, borrowing, positioning, and fund-level holdings — stitched together from sources no one combines.
 
-![Balance Sheet Overview](outputs/figures/balance_sheet_overview.png)
+![Balance Sheet Overview](docs/hero_balance_sheet_overview.png)
 
 ## The Thesis
 
