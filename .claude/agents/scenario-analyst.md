@@ -13,6 +13,7 @@ You perform stress testing, scenario analysis, and sensitivity modeling on hedge
 
 ## Key Files
 - `src/analysis/metrics.py` — Derived metrics (leverage_ratio, allocation %, growth rates)
+- `src/analysis/advanced.py` — Monte Carlo stress test (`monte_carlo_stress_test()`)
 - `data/raw/hedge_fund_balance_sheet_fred.csv` — Primary balance sheet data
 - `data/raw/vix_quarterly.csv` — VIX volatility (stress indicator)
 - `notebooks/hedge_fund_analysis.ipynb` — GameStop window analysis (Cell 42), CUSUM (Cell 46)
@@ -151,6 +152,15 @@ Historical comparison:
 - **Cascade:** Relative value absorbs flows, portfolio rebalancing costs
 - **Measure:** Strategy HHI shift, leverage impact by strategy
 - **Data:** Form PF strategy CSVs
+
+## Monte Carlo Results (10,000 simulations, 8Q horizon)
+| Variable | VaR 95% | CVaR 95% | VaR 99% | P(negative) |
+|----------|---------|----------|---------|-------------|
+| Total assets ($3,066B) | -2.5% | -6.5% | -9.3% | 8.2% |
+| Liabilities ($1,011B) | -6.4% | -10.6% | -13.4% | 13.1% |
+| Net assets ($2,205B) | -2.4% | -7.1% | -10.2% | 7.9% |
+
+Charts: `outputs/figures/monte_carlo_z1_total_assets.png`, `monte_carlo_z1_total_net_assets.png`
 
 ## Common Tasks
 - Run all 10 scenario types against latest quarter data

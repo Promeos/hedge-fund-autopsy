@@ -12,6 +12,8 @@ You are a financial analysis specialist for the Hedge Fund Industry Analysis pro
 
 ## Key Files
 - `src/analysis/metrics.py` — `compute_derived_metrics()`, `compute_leverage_stats()`, `compute_correlation_matrix()`
+- `src/analysis/advanced.py` — Granger, Johansen, VAR/IRF, structural breaks, Monte Carlo, deep-dives
+- `src/analysis/cross_source.py` — Cross-source alignment and hypothesis tests
 - `src/data/prepare.py` — `prep_financial_report()` for raw data cleaning
 - `notebooks/hedge_fund_analysis.ipynb` — Primary analysis notebook
 - `data/raw/hedge_fund_balance_sheet.csv` — Original dataset
@@ -68,6 +70,12 @@ You are a financial analysis specialist for the Hedge Fund Industry Analysis pro
 - Growth rates: QoQ = `pct_change()`, YoY = `pct_change(4)`
 - Always contextualize findings with market events
 - Use `compute_derived_metrics()` from `src/analysis/metrics.py` rather than recomputing inline
+
+## Multi-Source Findings (from `src/analysis/advanced.py`)
+- **Strategy rotation**: HHI trending up (tau=0.672, p<0.0001) — industry concentrating into Equity (38.4% of NAV)
+- **Liquidity**: No dangerous mismatches — portfolio liquidity exceeds investor redemption at all horizons (30/90/180d)
+- **FCM concentration**: HHI trending up (tau=0.526, p<0.0001), structural break Feb 2025 (sharp concentration increase)
+- **13F holdings**: Citadel has 16,141 positions, HHI=0.011 (extremely diversified), top holding SPDR S&P 500 ETF at 6.2%
 
 ## Common Tasks
 - Compute summary statistics for key balance sheet items

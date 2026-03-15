@@ -762,3 +762,220 @@ def plot_swaps_notional(df, save_path=None):
     plt.tight_layout()
     _save(fig, save_path)
     plt.show()
+
+
+# ---------------------------------------------------------------------------
+# Advanced analysis charts
+# ---------------------------------------------------------------------------
+
+def plot_granger_heatmap(p_matrix, save_path=None):
+    """Heatmap of Granger causality p-values (row causes column)."""
+    if p_matrix.empty:
+        print("plot_granger_heatmap: empty matrix")
+        return
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    # Use -log10(p) for visual clarity, cap at 4 (p=0.0001)
+    log_p = -np.log10(p_matrix.clip(lower=1e-10))
+    log_p = log_p.clip(upper=4)
+
+    short_labels = [c.replace('z1_', 'Z1:').replace('pf_', 'PF:')
+                    .replace('swap_', 'Swap:').replace('fcm_', 'FCM:')
+                    .replace('vix_', 'VIX:').replace('cot_', 'COT:')
+                    for c in p_matrix.columns]
+
+    mask = np.eye(len(p_matrix), dtype=bool)
+    sns.heatmap(log_p, annot=p_matrix.round(3), fmt='', cmap='YlOrRd',
+                mask=mask, xticklabels=short_labels, yticklabels=short_labels,
+                ax=ax, cbar_kws={'label': '-log10(p-value)'})
+
+    ax.set_title('Granger Causality Matrix (row causes column)')
+    ax.set_xlabel('Effect')
+    ax.set_ylabel('Cause')
+    plt.tight_layout()
+    _save(fig, save_path)
+    plt.show()
+
+
+def plot_impulse_response(irf_df, variables, save_path=None):
+    """Grid of impulse response functions from VAR model."""
+    n = len(variables)
+    fig, axes = plt.subplots(n, n, figsize=(4 * n, 3.5 * n), squeeze=False)
+
+    periods = irf_df.index
+
+    for i, shock in enumerate(variables):
+        for j, response in enumerate(variables):
+            ax = axes[j, i]
+            key = f"{shock} -> {response}"
+            if key in irf_df.columns:
+                vals = irf_df[key]
+                ax.plot(periods, vals, linewidth=2, color=COLORS['blue'])
+                ax.fill_between(periods, vals, alpha=0.15, color=COLORS['blue'])
+                ax.axhline(0, color='gray', linewidth=0.5)
+            ax.set_title(f'{shock.split("_")[-1]} → {response.split("_")[-1]}',
+                         fontsize=9)
+            if j == n - 1:
+                ax.set_xlabel('Quarters')
+            if i == 0:
+                ax.set_ylabel('Response')
+
+    fig.suptitle('VAR Impulse Response Functions (1 std dev shock)', fontsize=14, y=1.01)
+    plt.tight_layout()
+    _save(fig, save_path)
+    plt.show()
+
+
+def plot_monte_carlo(mc_results, variable, save_path=None):
+    """Fan chart of Monte Carlo simulated paths with percentile bands."""
+    if variable not in mc_results:
+        print(f"plot_monte_carlo: {variable} not in results")
+        return
+
+    r = mc_results[variable]
+    paths = r['paths']
+    n_quarters = paths.shape[1] - 1
+    quarters = np.arange(n_quarters + 1)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+
+    # Fan chart
+    percentiles = [1, 5, 10, 25, 50, 75, 90, 95, 99]
+    pct_values = np.percentile(paths, percentiles, axis=0)
+
+    bands = [(0, 8), (1, 7), (2, 6), (3, 5)]
+    alphas = [0.1, 0.2, 0.3, 0.4]
+    for (lo_idx, hi_idx), alpha in zip(bands, alphas):
+        ax1.fill_between(quarters, pct_values[lo_idx], pct_values[hi_idx],
+                         alpha=alpha, color=COLORS['blue'],
+                         label=f'{percentiles[lo_idx]}-{percentiles[hi_idx]}th pct')
+
+    ax1.plot(quarters, pct_values[4], linewidth=2, color=COLORS['dark'],
+             label='Median')
+    ax1.axhline(r['current_value'], color='gray', linestyle='--', alpha=0.5,
+                label=f'Current: ${r["current_value"]:.0f}B')
+
+    ax1.set_xlabel('Quarters')
+    ax1.set_ylabel('$B')
+    short_name = variable.replace('z1_', '').replace('_', ' ').title()
+    ax1.set_title(f'Monte Carlo: {short_name} ({paths.shape[0]:,} paths)')
+    ax1.legend(fontsize=8)
+
+    # Distribution of final values
+    final = r['final_returns'] * 100
+    ax2.hist(final, bins=80, color=COLORS['blue'], alpha=0.7, edgecolor='white')
+    ax2.axvline(r['var_95'] * 100, color=COLORS['red'], linewidth=2,
+                label=f'VaR 95%: {r["var_95"]:+.1%}')
+    ax2.axvline(r['cvar_95'] * 100, color=COLORS['dark_red'], linewidth=2,
+                linestyle='--', label=f'CVaR 95%: {r["cvar_95"]:+.1%}')
+    ax2.axvline(0, color='gray', linewidth=0.5)
+    ax2.set_xlabel(f'{n_quarters}Q Return (%)')
+    ax2.set_ylabel('Frequency')
+    ax2.set_title(f'Return Distribution (P(negative)={r["prob_negative"]:.1%})')
+    ax2.legend()
+
+    plt.tight_layout()
+    _save(fig, save_path)
+    plt.show()
+
+
+def plot_structural_breaks(series, breaks_result, save_path=None):
+    """Time series with structural break points and segment means."""
+    clean = series.dropna()
+    if clean.empty:
+        return
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+    ax.plot(clean.index, clean.values, linewidth=2, color=COLORS['dark'])
+
+    # Shade segments with alternating colors
+    seg_colors = [COLORS['blue'], COLORS['green'], COLORS['orange'], COLORS['purple']]
+    for i, seg in enumerate(breaks_result.get('segments', [])):
+        start = pd.Timestamp(seg['start'])
+        end = pd.Timestamp(seg['end'])
+        color = seg_colors[i % len(seg_colors)]
+        mask = (clean.index >= start) & (clean.index <= end)
+        ax.axhspan(seg['mean'] - seg['std'], seg['mean'] + seg['std'],
+                   alpha=0.08, color=color)
+        ax.axhline(seg['mean'], xmin=0, xmax=1, color=color,
+                   linestyle='--', alpha=0.5, linewidth=1)
+
+    # Mark break points
+    for b in breaks_result.get('breaks', []):
+        date = pd.Timestamp(b['date'])
+        ax.axvline(date, color=COLORS['red'], linewidth=2, linestyle='-',
+                   alpha=0.7, label=f"Break: {b['date']}")
+
+    add_event_annotations(ax)
+    ax.set_title(f'Structural Breaks — {breaks_result.get("name", "")}')
+    ax.legend(fontsize=9)
+    plt.tight_layout()
+    _save(fig, save_path)
+    plt.show()
+
+
+def plot_strategy_hhi(hhi_df, save_path=None):
+    """Strategy concentration HHI over time with top strategy labels."""
+    if hhi_df.empty:
+        return
+
+    fig, ax1 = plt.subplots(figsize=(14, 6))
+
+    ax1.plot(hhi_df['date'], hhi_df['hhi'], linewidth=2.5, color=COLORS['purple'],
+             label='Strategy HHI')
+    ax1.fill_between(hhi_df['date'], hhi_df['hhi'], alpha=0.15, color=COLORS['purple'])
+    ax1.set_ylabel('HHI (lower = more diversified)', color=COLORS['purple'])
+
+    ax2 = ax1.twinx()
+    ax2.plot(hhi_df['date'], hhi_df['top_share'] * 100, linewidth=2,
+             color=COLORS['teal'], linestyle='--', label='Top Strategy Share (%)')
+    ax2.set_ylabel('Top Strategy Share (%)', color=COLORS['teal'])
+
+    ax1.set_title('Form PF — Strategy Concentration Over Time')
+    fig.legend(loc='upper left', bbox_to_anchor=(0.12, 0.88))
+    add_event_annotations(ax1)
+    plt.tight_layout()
+    _save(fig, save_path)
+    plt.show()
+
+
+def plot_liquidity_mismatch_detail(liquidity_results, save_path=None):
+    """Liquidity mismatch at 30/90/180 days over time."""
+    periods = ['At most 30 days', 'At most 90 days', 'At most 180 days']
+    available = [p for p in periods if f'mismatch_{p}' in liquidity_results]
+
+    if not available:
+        print("plot_liquidity_mismatch_detail: no mismatch data")
+        return
+
+    fig, axes = plt.subplots(1, len(available), figsize=(6 * len(available), 5),
+                             squeeze=False)
+    axes = axes.flatten()
+
+    period_colors = {
+        'At most 30 days': COLORS['red'],
+        'At most 90 days': COLORS['orange'],
+        'At most 180 days': COLORS['blue'],
+    }
+
+    for i, period in enumerate(available):
+        ax = axes[i]
+        mm = liquidity_results[f'mismatch_{period}']
+        color = period_colors.get(period, COLORS['dark'])
+
+        ax.plot(mm.index, mm['mismatch'] * 100, linewidth=2, color=color)
+        ax.fill_between(mm.index, mm['mismatch'] * 100, alpha=0.15, color=color)
+        ax.axhline(20, color=COLORS['red'], linestyle='--', alpha=0.5,
+                   label='Danger threshold (20%)')
+        ax.axhline(0, color='gray', linewidth=0.5)
+
+        ax.set_title(period, fontsize=11)
+        ax.set_ylabel('Investor - Portfolio (%)')
+        ax.legend(fontsize=8)
+        add_event_annotations(ax)
+
+    fig.suptitle('Form PF — Liquidity Mismatch (Investor vs Portfolio)', fontsize=14, y=1.02)
+    plt.tight_layout()
+    _save(fig, save_path)
+    plt.show()

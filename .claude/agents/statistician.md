@@ -14,6 +14,8 @@ You perform advanced statistical analysis on hedge fund balance sheet time serie
 
 ## Key Files
 - `src/analysis/metrics.py` — Derived metrics (leverage_ratio, growth rates, allocation %)
+- `src/analysis/advanced.py` — Granger matrix, Johansen, VAR/IRF, structural breaks, Monte Carlo
+- `src/analysis/cross_source.py` — Cross-source alignment, reconciliation, hypothesis tests
 - `notebooks/hedge_fund_analysis.ipynb` — Existing statistical cells (CUSUM, seasonal decomp, rolling correlations)
 - `data/raw/hedge_fund_balance_sheet_fred.csv` — Primary dataset
 - `data/raw/vix_quarterly.csv` — VIX quarterly aggregates
@@ -34,7 +36,33 @@ You perform advanced statistical analysis on hedge fund balance sheet time serie
 - Summary statistics (describe) on key columns
 - Pearson correlation matrix of 8 balance sheet components
 
-### To Implement
+### Implemented (in `src/analysis/advanced.py`)
+
+#### Granger Causality Matrix
+- Pairwise tests across 6 variables (VIX, Z.1 leverage, Form PF GAV/NAV, COT positioning, IR swaps, FCM capital)
+- **6/30 significant pairs**: VIX→GAV/NAV (p=0.002), VIX→FCM capital (p=0.002), Z.1 leverage→VIX (p=0.020), Z.1 leverage→GAV/NAV (p=0.002), Z.1 leverage→FCM capital (p=0.025), IR swaps→COT (p=0.022)
+- Bidirectional feedback: leverage ↔ volatility
+
+#### Johansen Cointegration
+- Z.1 assets + Form PF GAV/NAV: **NOT cointegrated** (borderline, trace=29.48 vs crit=29.80)
+- Form PF GAV + CFTC IR/Credit swaps: **2 cointegrating relationships** — gross exposure tracks OTC swap markets
+
+#### VAR Model + Impulse Response (4 variables, lag=1, 8Q horizon)
+- VIX explains **45.6%** of Z.1 leverage variance at 8Q
+- Z.1 leverage explains **29.2%** of Form PF GAV/NAV variance
+- COT positioning is 32.1% explained by Form PF leverage
+
+#### Structural Break Detection
+- Form PF GAV/NAV: 3 breaks — 2017Q3, 2020Q2, 2023Q1 (current regime highest at 2.14x)
+- IR clearing rate: 3 breaks — 2016Q2, 2018Q4 (F=566, biggest), 2022Q2
+- VIX: 2 breaks — 2020Q1 (COVID), 2023Q1 (normalization)
+- Z.1 leverage: No significant breaks (stable at mean 0.43)
+
+#### Monte Carlo Stress Testing (10K paths, 8Q horizon)
+- Total assets VaR 95% = -2.5%, CVaR 95% = -6.5%, P(negative) = 8.2%
+- Net assets VaR 95% = -2.4%, CVaR 95% = -7.1%, P(negative) = 7.9%
+
+### To Implement (Future)
 
 #### Time Series Modeling
 ```python

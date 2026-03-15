@@ -18,6 +18,7 @@ You are a specialist in reconciling, aligning, and deriving insights from combin
 
 ## Module
 - `src/analysis/cross_source.py` — alignment, reconciliation, hypothesis tests
+- `src/analysis/advanced.py` — Granger matrix, Johansen cointegration, VAR/IRF, structural breaks
 
 ## Key Reconciliation Tasks
 
@@ -80,6 +81,22 @@ You are a specialist in reconciling, aligning, and deriving insights from combin
 | `implied_leverage_gap` | Form PF GAV/NAV − Z.1 leverage ratio | Z.1 + Form PF |
 | `position_capital_ratio` | CFTC net positioning / FCM excess capital | COT + FCM |
 | `clearing_consistency` | DTCC cleared % − CFTC cleared % | DTCC + Swaps |
+
+## Cross-Source Statistical Findings
+
+### Cointegration (Johansen)
+- Z.1 assets + Form PF GAV/NAV: **NOT cointegrated** (trace=29.48 vs crit=29.80) — industry size measures drifting apart
+- Form PF GAV + CFTC IR/Credit swaps: **2 cointegrating relationships** — gross exposure tracks OTC markets
+
+### Granger Causality (6 significant pairs)
+- VIX → Form PF GAV/NAV (p=0.002), VIX → FCM capital (p=0.002)
+- Z.1 leverage → VIX (p=0.020), Z.1 leverage → GAV/NAV (p=0.002), Z.1 leverage → FCM capital (p=0.025)
+- IR swap notional → COT positioning (p=0.022)
+
+### VAR Variance Decomposition (8Q horizon)
+- VIX explains 45.6% of Z.1 leverage variance
+- Z.1 leverage explains 29.2% of Form PF GAV/NAV variance
+- Form PF GAV/NAV explains 32.1% of COT positioning variance
 
 ## Analysis Tasks
 
