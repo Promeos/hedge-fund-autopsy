@@ -53,8 +53,12 @@ The Fed's Z.1 shows **$3.26T** in hedge fund assets (Q3 2025, all-time high, +16
 - In **2025Q1**, **63.9%** of creditors are U.S. financial institutions and **35.3%** are non-U.S. financial institutions
 - In **2025-03**, qualifying hedge funds held **$2.8T** in reverse repo and **$2.6T** in prime-broker financing
 
-### Leverage Is Mean-Reverting — But at the All-Time Peak
-Augmented Dickey-Fuller test (p=0.02) confirms the industry's leverage ratio is stationary — it oscillates around a mean of 0.43x and self-corrects. But as of Q3 2025, leverage hit **0.485x** — the **all-time high** across all 52 quarters of Z.1 data (Q4 2012 onward). It climbed from 0.420x to 0.485x in just 5 quarters (Q2 2024 – Q3 2025), the fastest buildup in the series. This implies systemic deleveraging mechanisms exist, but also that leverage always rebuilds — and it has never been higher than right now.
+### Leverage Looks Safe — Until You Measure It Properly
+The Fed's Z.1 leverage ratio (liabilities / net assets) averages **0.43x** and appears to oscillate around that mean — suggesting the industry self-corrects. But Z.1 only captures on-balance-sheet leverage.
+
+SEC Form PF tells a different story. The **GAV/NAV ratio** — gross asset value divided by net asset value — captures the full picture including off-balance-sheet and derivative exposure. It has climbed from **1.76x** (2013 Q4) to **2.32x** (2025 Q1, all-time high) with a statistically significant upward trend (+0.008x per quarter, p≈0.00). An Augmented Dickey-Fuller test confirms GAV/NAV is **non-stationary** (p=0.99) — it is not mean-reverting. It has never pulled back to its historical average.
+
+Both measures hit all-time highs simultaneously: Z.1 at **0.485x** (Q3 2025), GAV/NAV at **2.32x** (Q1 2025). The Z.1 data gives a false sense of safety — the leverage that matters most has been building uninterrupted for 12 years.
 
 ### The Derivatives Iceberg
 - **$4.8T long / $4.9T short** in interest rate derivatives — nearly perfectly hedged
