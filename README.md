@@ -17,7 +17,7 @@ This project pulls from **9 public data sources** across the Federal Reserve, SE
 - **$3.3 trillion** in total assets (Fed Z.1 Q3 2025) — with **$12.6T** in gross assets via Form PF
 - **$20.2 trillion** in derivative exposure — 3.7x their net asset value
 - **$415 trillion** in interest rate swap notional flowing through the system weekly
-- **384,723 individual equity holdings** across 8 of the largest funds — rolling 2-year window (2024–2026), amendment-deduped
+- **289,025 individual equity holdings** across 8 of the largest funds — rolling 2-year window (2024–2026), amendment-deduped
 - **Over 1 million OTC derivative trades per day** flowing through DTCC
 - The complete **borrowing, leverage, and counterparty structure** of an industry that answers to no single regulator
 
@@ -43,13 +43,13 @@ The Fed's Z.1 shows **$3.26T** in hedge fund assets (Q3 2025, all-time high, +16
 ### Extreme Concentration
 - Top 10 funds control **8.2%** of industry NAV
 - Top 500 funds control **54.8%**
-- Combined 13F equity AUM across 8 mega funds: **$831B** (Q4 2025 shares only)
-- NVIDIA held by all 8 funds ($19.1B combined); iShares ETFs are the #1 position ($20.3B)
+- Combined 13F equity AUM across 8 mega funds: **$566B** (Q4 2025 shares only, amendment-deduped)
+- NVIDIA held by all 8 funds ($9.6B combined); iShares ETFs are the #1 position ($24.0B)
 - Citadel filed **854 SC 13G forms** (5%+ ownership in 854 companies)
 
 ### The Borrowing Machine
-- **78%** of hedge fund borrowing flows through prime brokerage
-- Only **2.1%** is unsecured — the rest is collateralized
+- **79%** of hedge fund borrowing flows through prime brokerage (Fed Z.1, Q3 2025)
+- Only **0.7%** is unsecured — **99.3%** is collateralized (Form PF, 2025-03)
 - In **2025Q1**, **63.9%** of creditors are U.S. financial institutions and **35.3%** are non-U.S. financial institutions
 - In **2025-03**, qualifying hedge funds held **$2.8T** in reverse repo and **$2.6T** in prime-broker financing
 
@@ -68,11 +68,11 @@ Both measures hit all-time highs simultaneously: Z.1 at **0.485x** (Q3 2025), GA
 
 ### The Contagion Chain
 
-The individual findings above aren't independent — they're links in a statistically verified cascade. Granger causality tests (5/30 significant pairs) show that volatility shocks *cause* leverage adjustments (VIX → GAV/NAV, p=0.002) and broker capital stress (VIX → FCM excess capital, p=0.002), while leverage shifts feed back into volatility (Z.1 leverage → VIX, p=0.026). This isn't correlation — the causal direction is testable and confirmed.
+The individual findings above aren't independent — they're links in a statistically verified cascade. Granger causality tests (5/28 significant pairs) show that volatility shocks *cause* leverage adjustments (VIX → GAV/NAV, p=0.002) and broker capital stress (VIX → FCM excess capital, p=0.002), while leverage shifts feed back into volatility (Z.1 leverage → VIX, p=0.025). This isn't correlation — the causal direction is testable and confirmed.
 
 The accelerants are already in place:
 
-- **Liquidity mismatch:** 46.5% of hedge fund capital can't be liquidated within 30 days — redemption shocks force fire sales at exactly the wrong moment
+- **Liquidity mismatch:** Only 60.3% of portfolio assets can be liquidated within 30 days, but just 19.1% of investor capital is redeemable on the same horizon — redemption shocks force fire sales at exactly the wrong moment
 - **Rising broker concentration:** FCM market HHI is trending upward (p<0.001) — fewer brokers are absorbing more risk each cycle, widening the blast radius when one breaks
 - **Leverage is at the all-time peak:** 0.485x (Q3 2025) — the highest in 52 quarters of Z.1 data, with the fastest 5-quarter buildup on record. Monte Carlo simulation (10K paths, 8Q horizon) gives VaR 95% = -1.7% and P(negative) = 7.1%
 
@@ -86,7 +86,7 @@ The current suite emits **18 result rows**: 8 named cross-source tests plus 10 A
 |------|--------|---------|---------------|
 | **Liquidity gap vs VIX** | **PASS** | 0.005 | The 30-day investor-minus-portfolio liquidity gap moves higher in high-VIX quarters, but remains negative in the bundled sample |
 | **VIX → GAV/NAV (Granger)** | **PASS** | 0.002 | Volatility *causes* leverage changes — fear drives deleveraging |
-| **Z.1 leverage stationarity** | **PASS** | 0.026 | Industry leverage is mean-reverting around ~0.43x liabilities / net assets |
+| **Z.1 leverage stationarity** | **Fragile** | 0.026 | Borderline stationary (p=0.026 with default lags; p=0.135 with AIC lag selection) — sensitive to test parameters |
 | **Form PF GAV trend** | **PASS** | 0.000 | Industry gross assets trending strongly upward |
 | **Form PF GAV/NAV trend** | **PASS** | 0.000 | Leverage ratio trending upward — funds are levering up |
 | **Z.1 ~ Form PF cointegration** | FAIL | 0.173 | The two measures of industry size move independently |
@@ -203,7 +203,7 @@ Core processed outputs in `data/processed/`:
 
 ## Status
 
-**Active development.** All 9 data sources are acquired and parsed, and the cross-source analysis runs end-to-end. The 13F fetcher now uses a rolling 2-year window (currently 2024–2026) with 384,723 holdings across 8 funds. All fetchers use dynamic date ranges. 32 tests passing, ruff-clean codebase. Next: decompose the derivatives black box and map the counterparty network.
+**Active development.** All 9 data sources are acquired and parsed, and the cross-source analysis runs end-to-end. The 13F fetcher now uses a rolling 2-year window (currently 2024–2026) with 289,025 amendment-deduped holdings across 8 funds. All fetchers use dynamic date ranges. 32 tests passing, ruff-clean codebase. Next: decompose the derivatives black box and map the counterparty network.
 
 ## License & Citation
 
