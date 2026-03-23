@@ -237,7 +237,7 @@ This project includes a [`CITATION.cff`](CITATION.cff) file for automated citati
 
 ```
 Ortiz, C. (2026). Hedge Fund Mosaic: Piecing together the U.S. hedge fund industry
-from public regulatory data (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.19187969
+from public regulatory data (v1.1.0). Zenodo. https://doi.org/10.5281/zenodo.19187969
 ```
 
 ```bibtex
@@ -246,7 +246,7 @@ from public regulatory data (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.191
   title = {Hedge Fund Mosaic: Piecing Together the U.S. Hedge Fund Industry from Public Regulatory Data},
   year = {2026},
   publisher = {Zenodo},
-  version = {1.0.0},
+  version = {1.1.0},
   doi = {10.5281/zenodo.19187969},
   url = {https://doi.org/10.5281/zenodo.19187969}
 }
