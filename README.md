@@ -1,5 +1,7 @@
 # Hedge Fund Autopsy
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19187969.svg)](https://doi.org/10.5281/zenodo.19187969)
+
 Reconstructing the U.S. hedge fund industry from 9 public regulatory data sources.
 
 An open-source intelligence project dissecting the financial anatomy of U.S. hedge funds — balance sheets, derivatives, borrowing, positioning, and fund-level holdings — stitched together from sources no one combines.
@@ -211,15 +213,17 @@ This project includes a [`CITATION.cff`](CITATION.cff) file for automated citati
 
 ```
 Ortiz, C. (2026). Hedge Fund Autopsy: Reconstructing the U.S. hedge fund industry
-from public regulatory data. https://github.com/Promeos/hedge-fund-autopsy
+from public regulatory data (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.19187969
 ```
 
 ```bibtex
-@misc{ortiz2026hedgefundautopsy,
+@dataset{ortiz2026hedgefundautopsy,
   author = {Ortiz, Christopher},
   title = {Hedge Fund Autopsy: Reconstructing the U.S. Hedge Fund Industry from Public Regulatory Data},
   year = {2026},
-  publisher = {GitHub},
-  url = {https://github.com/Promeos/hedge-fund-autopsy}
+  publisher = {Zenodo},
+  version = {1.0.0},
+  doi = {10.5281/zenodo.19187969},
+  url = {https://doi.org/10.5281/zenodo.19187969}
 }
 ```
