@@ -40,6 +40,21 @@ This project pulls from **9 public data sources** across the Federal Reserve, SE
 ### The Industry Is 4x Larger Than Reported
 The Fed's Z.1 shows **$3.26T** in hedge fund assets (Q3 2025, all-time high, +16% YoY). SEC Form PF shows **$12.6T in gross assets** and **$20.2T in derivatives**. The difference is leverage and off-balance-sheet exposure that the Fed's flow-of-funds framework doesn't capture.
 
+Hedge funds are only part of the picture. Form PF covers all private funds — and the total is staggering:
+
+| Fund Type | Gross Assets (GAV) | Net Assets (NAV) | Leverage (GAV/NAV) |
+|-----------|-------------------|-------------------|-------------------|
+| **Hedge Funds** | **$12.6T** | **$5.4T** | **2.32x** |
+| Private Equity | $7.9T | $7.3T | 1.09x |
+| Other Private Funds | $1.9T | $1.6T | 1.14x |
+| Securitized Asset Funds | $1.1T | $0.4T | 2.74x |
+| Real Estate Funds | $1.1T | $0.9T | 1.28x |
+| Venture Capital | $0.5T | $0.4T | 1.09x |
+| Liquidity Funds | $0.4T | $0.4T | 1.03x |
+| **All Private Funds** | **$25.5T** | **$16.4T** | **1.55x** |
+
+That's **$25.5 trillion** in gross assets across the U.S. private fund industry (Q1 2025) — and hedge funds carry by far the highest leverage at 2.32x. Securitized asset funds are even more leveraged at 2.74x, but at a fraction of the size.
+
 ### Extreme Concentration
 - Top 10 funds control **8.2%** of industry NAV
 - Top 500 funds control **54.8%**
