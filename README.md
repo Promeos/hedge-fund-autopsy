@@ -130,6 +130,194 @@ Additionally, the advanced analysis found **3 structural breaks** in Form PF GAV
 | **EDGAR** | Filing volume by fund |
 | **Cross-Source** | Z.1 vs Form PF leverage comparison |
 
+## Data Dictionary
+
+All processed CSVs are written to `data/processed/`. Monetary values are in **billions USD** unless noted. Dates use quarterly (`2025Q1`) or monthly (`2025-03`) format.
+
+<details>
+<summary><strong>Federal Reserve Z.1 (3 files)</strong></summary>
+
+<br>
+
+**`hedge_fund_analysis.csv`** — 52 rows, quarterly (Q4 2012 – Q3 2025)
+
+The primary analysis dataset. Fed Z.1 Table B.101.f balance sheet items joined with VIX and derived metrics.
+
+| Column | Description |
+|--------|-------------|
+| `Total assets` | Aggregate hedge fund assets ($B) |
+| `Total liabilities` | Aggregate liabilities ($B) |
+| `Total net assets` | Assets minus liabilities ($B) |
+| `Corporate equities; asset` | Equity holdings ($B) |
+| `Derivatives (long value)` | Derivative exposure, long side ($B) |
+| `Loans, total secured borrowing via prime brokerage; liability` | Prime brokerage borrowing ($B) |
+| `VIX_mean`, `VIX_max`, `VIX_end` | Quarterly VIX statistics |
+| `leverage_ratio` | Total liabilities / total net assets |
+| `cash_to_assets` | (Deposits + cash + MMF) / total assets |
+| `equity_pct` | Corporate equities / total assets |
+| `derivative_to_assets` | Derivatives (long) / total assets |
+| `prime_brokerage_pct` | Prime brokerage / total loans (liability) |
+| `foreign_borrowing_share` | Foreign / (domestic + foreign) borrowing |
+| `total_assets_qoq`, `total_assets_yoy` | Quarter-over-quarter and year-over-year growth |
+| `leverage_change` | Quarter-over-quarter change in leverage ratio |
+
+**`hedge_fund_metrics.csv`** — 319 rows. Same schema, includes pre-2012 quarters (many zeros).
+
+**`statistical_analysis.csv`** — 319 rows. Same as metrics plus `regime` column from regime detection.
+
+</details>
+
+<details>
+<summary><strong>SEC Form PF (19 files)</strong></summary>
+
+<br>
+
+**`form_pf_gav_nav.csv`** — 392 rows
+
+| Column | Description |
+|--------|-------------|
+| `fund_type` | Hedge Fund, Private Equity, Liquidity Fund, etc. |
+| `quarter` | e.g., `2025Q1` |
+| `gav` | Gross asset value ($B) |
+| `nav` | Net asset value ($B) |
+| `gav_nav_ratio` | GAV / NAV — true leverage proxy |
+
+**`form_pf_borrowing_detail.csv`** — 882 rows, monthly
+
+| Column | Description |
+|--------|-------------|
+| `type` | Secured, Unsecured, or Total |
+| `subtype` | Reverse Repo, Prime Broker, Other Secured, or Subtotal |
+| `month` | e.g., `2025-03` |
+| `amount_bn` | Borrowing amount ($B) |
+
+**`form_pf_borrowing_creditor.csv`** — 196 rows, quarterly
+
+| Column | Description |
+|--------|-------------|
+| `creditor_type` | US Financial, Non-US Financial, US Non-Financial, Non-US Non-Financial |
+| `share` | Fraction of total borrowing (0–1) |
+
+**`form_pf_notional.csv`** — 5,145 rows, monthly
+
+| Column | Description |
+|--------|-------------|
+| `investment_type` | e.g., Interest Rate Derivatives, Credit Derivatives, Listed Equities |
+| `long_notional` | Long exposure ($B) |
+| `short_notional` | Short exposure ($B) |
+| `net_exposure` | Long minus short ($B) |
+
+**`form_pf_concentration.csv`** — 294 rows, quarterly
+
+| Column | Description |
+|--------|-------------|
+| `top_n` | Top 10, 25, 50, 100, 250, or 500 |
+| `nav_share` | Share of industry NAV (0–1) |
+| `gav_share`, `borrowing_share`, `derivative_share` | Corresponding shares |
+
+**`form_pf_strategy.csv`** — 441 rows, quarterly
+
+| Column | Description |
+|--------|-------------|
+| `strategy` | Equity, Credit, Macro, Multi-Strategy, Relative Value, etc. |
+| `gav`, `nav`, `borrowing` | Strategy-level aggregates ($B) |
+
+**`form_pf_liquidity.csv`** — 882 rows, quarterly
+
+| Column | Description |
+|--------|-------------|
+| `period` | At most 1 day, 7 days, 30 days, 90 days, 180 days, 365 days |
+| `cumulative_pct` | Cumulative fraction liquidatable/redeemable (0–1) |
+| `liquidity_type` | `investor_liquidity`, `portfolio_liquidity`, or `financing_liquidity` |
+
+**`form_pf_metric_liquidity_mismatch.csv`** — 49 rows, quarterly
+
+| Column | Description |
+|--------|-------------|
+| `portfolio_30d` | Fraction of portfolio liquidatable in 30 days |
+| `investor_30d` | Fraction of investor capital redeemable in 30 days |
+| `liquidity_mismatch_30d` | portfolio_30d minus investor_30d |
+
+**Other Form PF files:** `form_pf_derivatives.csv` (derivative value by fund type), `form_pf_fund_counts.csv` (fund counts by type), `form_pf_fair_value.csv` (Level 1/2/3 fair value), `form_pf_geography.csv` (geographic allocation), `form_pf_leverage_dist.csv` (leverage ratio distribution), `form_pf_sector.csv` (sector allocation), `form_pf_borrowing_pct.csv` (borrowing as % of GAV), `form_pf_metric_concentration_top10.csv`, `form_pf_metric_hf_gav_nav.csv`, `form_pf_metric_strategy_hhi.csv`, `form_pf_metric_latest_notional.csv`.
+
+</details>
+
+<details>
+<summary><strong>CFTC Weekly Swaps (3 files)</strong></summary>
+
+<br>
+
+**`swaps_weekly.csv`** — 605 rows, weekly (2013–2026)
+
+| Column | Description |
+|--------|-------------|
+| `date` | Report date |
+| `ir_total` | Interest rate swap notional outstanding ($B) |
+| `ir_cleared`, `ir_uncleared` | Cleared vs uncleared IR notional ($B) |
+| `ir_cleared_pct` | Fraction cleared (0–1) |
+| `credit_total`, `fx_total`, `equity_total`, `commodity_total` | Notional by asset class ($B) |
+| `credit_cleared_pct`, `fx_cleared_pct` | Clearing rates by asset class |
+
+**`swaps_quarterly.csv`** — 51 rows. Quarterly aggregation with `weeks` count.
+
+**`swaps_weekly_long.csv`** — 5,733 rows. Long-format with `metric`, `value_millions`, `value_billions`.
+
+</details>
+
+<details>
+<summary><strong>DTCC Swap Repository (2 files)</strong></summary>
+
+<br>
+
+**`dtcc_daily_summary.csv`** — 1,309 rows, daily (2025–2026)
+
+| Column | Description |
+|--------|-------------|
+| `date` | Trading date |
+| `asset_class` | Commodity, Credit, Equity, ForeignExchange, InterestRate |
+| `trade_count` | Number of trades |
+| `total_notional_bn` | Total notional ($B) |
+| `cleared_pct` | Fraction of trades cleared (0–1) |
+| `pb_pct` | Fraction involving prime brokerage (0–1) |
+| `block_pct` | Fraction that are block trades (0–1) |
+
+**`dtcc_quarterly.csv`** — 25 rows. Quarter-end snapshots by asset class.
+
+</details>
+
+<details>
+<summary><strong>CFTC FCM Financials (5 files)</strong></summary>
+
+<br>
+
+**`fcm_monthly_industry.csv`** — 49 rows, monthly (2022–2026)
+
+| Column | Description |
+|--------|-------------|
+| `adj_net_capital` | Industry adjusted net capital (raw USD) |
+| `net_capital_requirement` | Regulatory minimum (raw USD) |
+| `excess_net_capital` | Capital above requirement (raw USD) |
+| `customer_assets_seg` | Customer segregated assets (raw USD) |
+| `cleared_swap_seg` | Cleared swap customer segregation (raw USD) |
+| `capital_adequacy_ratio` | adj_net_capital / requirement |
+| `swap_seg_share` | Cleared swap seg / (customer + swap seg) |
+| `fcm_count` | Number of registered FCMs |
+
+**`fcm_concentration.csv`** — 49 rows, monthly
+
+| Column | Description |
+|--------|-------------|
+| `hhi` | Herfindahl-Hirschman Index of customer seg market share |
+| `top5_share` | Top 5 FCM share of customer segregated assets |
+
+**`fcm_monthly_all.csv`** — 3,083 rows. Individual FCM-level monthly data.
+
+**`fcm_top_brokers.csv`** — 490 rows. Top 10 FCMs per month with market share.
+
+**`fcm_quarterly.csv`** — 17 rows. Quarter-end industry snapshots.
+
+</details>
+
 ## Setup
 
 ```bash
