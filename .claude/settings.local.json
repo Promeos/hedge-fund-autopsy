@@ -12,7 +12,8 @@
       "Bash(mkdir*)",
       "Bash(pip*)",
       "Bash(curl*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Read(//Users/christopherortiz/.claude/projects/-Users-christopherortiz-Desktop-GitHub-Repositories-financial_data/memory/**)"
     ]
   }
 }
