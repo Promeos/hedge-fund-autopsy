@@ -71,8 +71,8 @@ def granger_causality_matrix(aligned, variables=None, maxlag=4):
                 f_stat = result[best_lag][0]["ssr_ftest"][0]
                 p_matrix.loc[cause, effect] = min_p
                 f_matrix.loc[cause, effect] = f_stat
-            except Exception:
-                pass
+            except Exception as e:
+                warnings.warn(f"Granger test failed for {cause} -> {effect}: {e}")
 
     significant = (p_matrix < 0.05).sum().sum()
     total = n * (n - 1)

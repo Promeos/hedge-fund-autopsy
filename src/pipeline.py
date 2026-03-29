@@ -93,12 +93,16 @@ def step_parse():
         ("DTCC", parse_all_dtcc),
         ("Swaps", parse_all_swaps),
     ]
+    failures = []
     for i, (name, fn) in enumerate(parsers, 1):
         print(f"[{i}/{len(parsers)}] Parsing {name}")
         try:
             fn()
         except Exception as e:
             print(f"  WARNING: {name} parsing failed — {e}")
+            failures.append(name)
+    if failures:
+        raise RuntimeError(f"Parsing failed for: {', '.join(failures)}")
 
 
 def step_analyze():
@@ -124,7 +128,8 @@ def step_analyze():
     try:
         run_full_analysis(save=True)
     except Exception as e:
-        print(f"  WARNING: Cross-source analysis failed — {e}")
+        print(f"  ERROR: Cross-source analysis failed — {e}")
+        raise
 
 
 def main():

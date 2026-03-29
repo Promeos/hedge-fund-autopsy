@@ -12,6 +12,7 @@ Rate limits: 0.2s FRED, 0.15s SEC EDGAR.
 import json
 import os
 import time
+import warnings
 import xml.etree.ElementTree as ET
 import zipfile
 from io import BytesIO
@@ -258,8 +259,8 @@ def fetch_13f_holdings(cik, fund_name, cache_dir="data/raw", start_date=None, en
                         # Broader: any XML that's not primary_doc.xml
                         if name.endswith(".xml") and name != "primary_doc.xml" and info_file is None:
                             info_file = item["name"]
-                except Exception:
-                    pass
+                except Exception as e:
+                    warnings.warn(f"13F index.json unavailable for {acc_no}: {e}")
 
                 # Fallback: scrape HTML index for INFORMATION TABLE typed files
                 if not info_file:

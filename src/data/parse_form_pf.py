@@ -11,6 +11,7 @@ liquidity, fair value hierarchy, geography, and sector data.
 """
 
 import os
+import warnings
 
 import openpyxl
 import pandas as pd
@@ -125,7 +126,8 @@ def parse_fund_counts(filepath):
             df = parse_simple_table(filepath, tab, label_col="fund_type")
             df["table"] = tab
             dfs.append(df)
-        except Exception:
+        except Exception as e:
+            warnings.warn(f"Form PF: failed to parse {tab}: {e}")
             continue
     if not dfs:
         return pd.DataFrame()
@@ -178,7 +180,8 @@ def parse_borrowing(filepath):
         df34 = parse_simple_table(filepath, "Tab.8.34", label_col="creditor_type")
         melted34 = _melt_quarterly(df34, label_col="creditor_type", value_name="share")
         melted34["source"] = "Tab.8.34"
-    except Exception:
+    except Exception as e:
+        warnings.warn(f"Form PF: failed to parse Tab.8.34: {e}")
         melted34 = pd.DataFrame()
 
     return {
@@ -217,7 +220,8 @@ def parse_concentration(filepath):
             melted = _melt_quarterly(df, label_col="top_n", value_name=metric)
             melted["table"] = tab
             results.append(melted)
-        except Exception:
+        except Exception as e:
+            warnings.warn(f"Form PF: failed to parse {tab}: {e}")
             continue
 
     if not results:
@@ -240,8 +244,8 @@ def parse_strategy(filepath):
         melted = _melt_quarterly(df, label_col="strategy", value_name="gav")
         melted["metric"] = "gav"
         parts.append(melted)
-    except Exception:
-        pass
+    except Exception as e:
+        warnings.warn(f"Form PF: failed to parse Tab.8.9 (strategy GAV): {e}")
 
     # Tab.8.10 = QHF NAV by strategy (quarterly)
     try:
@@ -249,8 +253,8 @@ def parse_strategy(filepath):
         melted = _melt_quarterly(df, label_col="strategy", value_name="nav")
         melted["metric"] = "nav"
         parts.append(melted)
-    except Exception:
-        pass
+    except Exception as e:
+        warnings.warn(f"Form PF: failed to parse Tab.8.10 (strategy NAV): {e}")
 
     # Tab.8.14 = QHF borrowing by strategy (quarterly)
     try:
@@ -258,8 +262,8 @@ def parse_strategy(filepath):
         melted = _melt_quarterly(df, label_col="strategy", value_name="borrowing")
         melted["metric"] = "borrowing"
         parts.append(melted)
-    except Exception:
-        pass
+    except Exception as e:
+        warnings.warn(f"Form PF: failed to parse Tab.8.14 (strategy borrowing): {e}")
 
     if not parts:
         return pd.DataFrame()
@@ -293,7 +297,8 @@ def parse_leverage_distribution(filepath):
             melted = _melt_two_level(df, "exposure", "ratio_bucket", value_name="fund_count", time_col="month")
             melted["exposure_type"] = exposure_type
             results.append(melted)
-        except Exception:
+        except Exception as e:
+            warnings.warn(f"Form PF: failed to parse {tab}: {e}")
             continue
 
     if not results:
@@ -331,7 +336,8 @@ def parse_liquidity(filepath):
             melted = _melt_quarterly(df, label_col="period", value_name="cumulative_pct")
             melted["liquidity_type"] = liq_type
             results.append(melted)
-        except Exception:
+        except Exception as e:
+            warnings.warn(f"Form PF: failed to parse {tab}: {e}")
             continue
 
     if not results:
@@ -349,7 +355,8 @@ def parse_fair_value(filepath):
             melted = _melt_quarterly(df, label_col="category", value_name="amount")
             melted["table"] = tab
             results.append(melted)
-        except Exception:
+        except Exception as e:
+            warnings.warn(f"Form PF: failed to parse {tab}: {e}")
             continue
 
     if not results:
@@ -366,7 +373,8 @@ def parse_geography(filepath):
             melted = _melt_two_level(df, "fund_universe", "country", value_name="share", time_col="quarter")
             melted["table"] = tab
             results.append(melted)
-        except Exception:
+        except Exception as e:
+            warnings.warn(f"Form PF: failed to parse {tab}: {e}")
             continue
 
     if not results:
@@ -384,7 +392,8 @@ def parse_sector(filepath):
             melted = _melt_quarterly(df, label_col="sector", value_name="amount")
             melted["table"] = tab
             results.append(melted)
-        except Exception:
+        except Exception as e:
+            warnings.warn(f"Form PF: failed to parse {tab}: {e}")
             continue
 
     if not results:

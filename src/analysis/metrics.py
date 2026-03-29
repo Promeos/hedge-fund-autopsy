@@ -43,7 +43,7 @@ def compute_derived_metrics(df):
     )
     df["foreign_borrowing_share"] = df["foreign_borrowing"] / (df["domestic_borrowing"] + df["foreign_borrowing"])
 
-    # Growth rates
+    # Growth rates (fill_method=None suppresses FutureWarning in pandas <2.4)
     df["total_assets_qoq"] = df["Total assets"].pct_change(fill_method=None)
     df["total_assets_yoy"] = df["Total assets"].pct_change(periods=4, fill_method=None)
     df["net_assets_qoq"] = df["Total net assets"].pct_change(fill_method=None)

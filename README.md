@@ -335,12 +335,16 @@ The primary analysis dataset. Fed Z.1 Table B.101.f balance sheet items joined w
 
 ## Setup
 
+Requires **Python 3.10+**.
+
 ```bash
 pip install -r requirements.txt
 echo "FRED_API_KEY=your_key_here" > .env
 ```
 
 Get a free FRED API key at https://fred.stlouisfed.org/docs/api/api_key.html
+
+> **Note:** Form PF data requires a manual download from the [SEC Form PF Statistics page](https://www.sec.gov/data-research/form-pf-statistics). Place the `.xlsx` file in `data/raw/form_pf/`. All other sources are fetched automatically. Run fetch commands before parse commands.
 
 ## Usage
 
@@ -427,6 +431,8 @@ Core processed outputs in `data/processed/`:
 ## Status
 
 **Active development.** All 9 data sources are acquired and parsed, and the cross-source analysis runs end-to-end. The 13F fetcher now uses a rolling 2-year window (currently 2024–2026) with 289,025 amendment-deduped holdings across 8 funds. All fetchers use dynamic date ranges. 32 tests passing, ruff-clean codebase. Next: decompose the derivatives black box and map the counterparty network.
+
+> **Note:** 13F holdings (`data/raw/13f_all_holdings.csv`) are not bundled at full size in the repository. Run `/fetch-13f` (or `python -m src.data.fetch --13f`) to populate the rolling 2-year window. Cross-source tests like H7 will report "Insufficient overlapping quarters" until the 13F date range overlaps with Form PF data.
 
 ## License & Citation
 

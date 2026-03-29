@@ -10,6 +10,7 @@ Data: ~1,825 daily files across 5 asset classes (2025-03-13 onward).
 
 import gc
 import os
+import sys
 import zipfile
 from datetime import datetime
 
@@ -106,6 +107,7 @@ def parse_single_zip(filepath):
                             try:
                                 notional_val = float(raw)
                                 if notional_val > 1e11:
+                                    print(f"  WARN: notional {notional_val:.0f} exceeds $100B cap, zeroed", file=sys.stderr)
                                     notional_val = 0.0
                             except ValueError:
                                 pass
@@ -150,6 +152,7 @@ def parse_single_zip(filepath):
             "pb_pct": pb_count / trade_count if trade_count > 0 else 0,
             "block_count": block_count,
             "block_pct": block_count / trade_count if trade_count > 0 else 0,
+            "avg_trade_size_bn": (total_notional / 1e9) / trade_count if trade_count > 0 else 0,
         }
 
         return summary
@@ -174,6 +177,7 @@ SUMMARY_FIELDS = [
     "pb_pct",
     "block_count",
     "block_pct",
+    "avg_trade_size_bn",
 ]
 
 

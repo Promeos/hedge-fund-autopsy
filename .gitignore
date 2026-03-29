@@ -7,5 +7,7 @@ __pycache__/
 outputs/
 data/raw/
 data/processed/
+.pytest_cache/
+.ruff_cache/
 repo-check-before-distribution.md
 form-pf-redesign.md

@@ -42,64 +42,22 @@ def test_h7_accepts_value_thousands_and_report_period(monkeypatch, tmp_path):
     raw_dir = tmp_path / "raw"
     raw_dir.mkdir()
 
-    holdings = pd.DataFrame(
-        {
-            "fund": [
-                "Fund A",
-                "Fund A",
-                "Fund B",
-                "Fund B",
-                "Fund A",
-                "Fund A",
-                "Fund B",
-                "Fund B",
-                "Fund A",
-                "Fund A",
-                "Fund B",
-                "Fund B",
-                "Fund A",
-                "Fund A",
-                "Fund B",
-                "Fund B",
-            ],
-            "report_period": [
-                "2024Q1",
-                "2024Q1",
-                "2024Q1",
-                "2024Q1",
-                "2024Q2",
-                "2024Q2",
-                "2024Q2",
-                "2024Q2",
-                "2024Q3",
-                "2024Q3",
-                "2024Q3",
-                "2024Q3",
-                "2024Q4",
-                "2024Q4",
-                "2024Q4",
-                "2024Q4",
-            ],
-            "value_thousands": [
-                90,
-                10,
-                80,
-                20,
-                85,
-                15,
-                70,
-                30,
-                75,
-                25,
-                60,
-                40,
-                65,
-                35,
-                55,
-                45,
-            ],
-        }
-    )
+    # 12 funds per quarter so top-10 share < 1.0 and varies across quarters.
+    # Funds K and L grow from small to large, shifting the top-10 concentration.
+    funds = [f"Fund {c}" for c in "ABCDEFGHIJKL"]
+    rows = []
+    # Q1: K=10, L=10 are tiny → top-10 share high
+    q1_vals = [500, 400, 300, 200, 150, 120, 100, 80, 60, 50, 10, 10]
+    # Q2: K=50, L=50 growing
+    q2_vals = [450, 380, 280, 200, 150, 120, 100, 80, 60, 50, 50, 50]
+    # Q3: K=100, L=100
+    q3_vals = [400, 350, 260, 200, 150, 120, 100, 80, 60, 50, 100, 100]
+    # Q4: K=200, L=200 → top-10 share drops as bottom 2 are now in top-10
+    q4_vals = [350, 300, 250, 200, 150, 120, 100, 80, 60, 50, 200, 200]
+    for q, vals in [("2024Q1", q1_vals), ("2024Q2", q2_vals), ("2024Q3", q3_vals), ("2024Q4", q4_vals)]:
+        for fund, val in zip(funds, vals):
+            rows.append({"fund": fund, "report_period": q, "value_thousands": val})
+    holdings = pd.DataFrame(rows)
     holdings.to_csv(raw_dir / "13f_all_holdings.csv", index=False)
 
     monkeypatch.setattr("src.analysis.cross_source.RAW", str(raw_dir))
@@ -120,3 +78,4 @@ def test_h7_accepts_value_thousands_and_report_period(monkeypatch, tmp_path):
 
     assert result["result"] in {"PASS", "FAIL"}
     assert "lacks required columns" not in result["interpretation"]
+    assert "lacks fund column" not in result["interpretation"]

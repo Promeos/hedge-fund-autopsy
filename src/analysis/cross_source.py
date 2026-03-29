@@ -641,8 +641,11 @@ def test_h5_fcm_leads_cot(aligned):
         if len(overlap) < 8:
             return _make_result(test_id, desc, interpretation="Insufficient data")
 
-        fcm_growth = overlap[fcm_col].pct_change().dropna()
-        cot_growth = overlap[cot_col].pct_change().replace([np.inf, -np.inf], np.nan).dropna()
+        fcm_diff = overlap[fcm_col].diff().dropna()
+        cot_diff = overlap[cot_col].diff().dropna()
+        # Standardize to z-scores (robust for signed series that cross zero)
+        fcm_growth = (fcm_diff - fcm_diff.mean()) / (fcm_diff.std() + 1e-10)
+        cot_growth = (cot_diff - cot_diff.mean()) / (cot_diff.std() + 1e-10)
 
         common_idx = fcm_growth.index.intersection(cot_growth.index)
         if len(common_idx) < 6:
@@ -705,7 +708,7 @@ def test_h6_liquidity_vix(sources):
         vix = sources["vix"].copy()
 
         # Compute liquidity mismatch per quarter:
-        # investor liquidity at 30d minus portfolio liquidity at 30d
+        # portfolio liquidity at 30d minus investor liquidity at 30d (matches parse_form_pf convention)
         inv = liq[(liq["liquidity_type"] == "investor_liquidity") & (liq["period"] == "At most 30 days")].copy()
         port = liq[(liq["liquidity_type"] == "portfolio_liquidity") & (liq["period"] == "At most 30 days")].copy()
 
@@ -718,7 +721,7 @@ def test_h6_liquidity_vix(sources):
         inv = inv.set_index("date")["cumulative_pct"]
         port = port.set_index("date")["cumulative_pct"]
 
-        mismatch = inv - port  # positive = investors can redeem faster than portfolio liquidates
+        mismatch = port - inv  # positive = portfolio liquidates faster than investors redeem = healthy
         mismatch = mismatch.dropna()
         mismatch.name = "liquidity_mismatch"
 
@@ -749,12 +752,14 @@ def test_h6_liquidity_vix(sources):
             )
 
         t_stat, p_val = stats.ttest_ind(high_mismatch, low_mismatch, equal_var=False)
-        interp = (
-            f"30-day liquidity gap is higher in high-VIX quarters "
-            f"(high={high_mismatch.mean():.3f}, low={low_mismatch.mean():.3f})"
-            if p_val < 0.05
-            else f"No significant difference (high={high_mismatch.mean():.3f}, low={low_mismatch.mean():.3f})"
-        )
+        if p_val < 0.05:
+            direction = "worsens" if high_mismatch.mean() < low_mismatch.mean() else "improves"
+            interp = (
+                f"30-day liquidity gap {direction} in high-VIX quarters "
+                f"(high-VIX={high_mismatch.mean():.3f}, low-VIX={low_mismatch.mean():.3f})"
+            )
+        else:
+            interp = f"No significant difference (high-VIX={high_mismatch.mean():.3f}, low-VIX={low_mismatch.mean():.3f})"
         return _make_result(test_id, desc, statistic=t_stat, p_value=p_val, interpretation=interp)
     except Exception as exc:
         return _make_result(test_id, desc, interpretation=f"Error: {exc}")
@@ -808,17 +813,22 @@ def test_h7_concentration_correlation(sources):
             else:
                 return _make_result(test_id, desc, interpretation="13F holdings file lacks quarter columns")
 
-        # HHI by quarter from 13F
+        if "fund" not in holdings.columns:
+            return _make_result(test_id, desc, interpretation="13F holdings file lacks fund column for fund-level concentration")
+
+        # Top-10 fund share by quarter from 13F (parallels Form PF Top 10 NAV share)
         hhi_13f = []
         for q, grp in holdings.groupby("quarter"):
-            total = grp["holding_value"].sum()
-            if total > 0:
-                shares = grp["holding_value"] / total
-                hhi = (shares**2).sum()
-                hhi_13f.append({"quarter": q, "hhi_13f": hhi})
+            fund_totals = grp.groupby("fund")["holding_value"].sum()
+            total = fund_totals.sum()
+            if total > 0 and len(fund_totals) > 0:
+                fund_totals_sorted = fund_totals.sort_values(ascending=False)
+                top_n = min(10, len(fund_totals_sorted))
+                top_share = fund_totals_sorted.iloc[:top_n].sum() / total
+                hhi_13f.append({"quarter": q, "hhi_13f": top_share})
 
         if not hhi_13f:
-            return _make_result(test_id, desc, interpretation="Could not compute 13F HHI")
+            return _make_result(test_id, desc, interpretation="Could not compute 13F fund concentration")
 
         hhi_df = pd.DataFrame(hhi_13f)
         hhi_df["date"] = _quarter_str_to_timestamp(hhi_df["quarter"])

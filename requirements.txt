@@ -1,13 +1,18 @@
-numpy>=1.24
-pandas>=2.0
-matplotlib>=3.7
-seaborn>=0.12
-requests>=2.28
-fredapi>=0.5
-python-dotenv>=1.0
-jupyter>=1.0
-pytest>=7.0
-statsmodels>=0.14
-openpyxl>=3.1
-scipy>=1.10
-scikit-learn>=1.2
+# Core
+numpy==1.26.4
+pandas==2.3.3
+matplotlib==3.10.1
+seaborn==0.13.2
+requests==2.32.3
+fredapi==0.5.2
+python-dotenv==1.0.1
+openpyxl==3.1.5
+
+# Statistics
+statsmodels==0.14.6
+scipy==1.17.1
+scikit-learn==1.8.0
+
+# Dev
+jupyter==1.1.1
+pytest==9.0.2

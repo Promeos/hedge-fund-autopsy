@@ -160,8 +160,8 @@ def parse_all_fcm(data_dir=None, output_dir=None):
     industry["capital_adequacy_ratio"] = industry["adj_net_capital"] / industry["net_capital_requirement"]
     industry["excess_capital_pct"] = industry["excess_net_capital"] / industry["adj_net_capital"]
     if "cleared_swap_seg" in industry.columns and "customer_assets_seg" in industry.columns:
-        industry["swap_seg_share"] = industry["cleared_swap_seg"] / (
-            industry["customer_assets_seg"] + industry["cleared_swap_seg"].fillna(0)
+        industry["swap_seg_share"] = industry["cleared_swap_seg"].fillna(0) / (
+            industry["customer_assets_seg"].fillna(0) + industry["cleared_swap_seg"].fillna(0)
         )
 
     industry.to_csv(os.path.join(output_dir, "fcm_monthly_industry.csv"), index=False)
